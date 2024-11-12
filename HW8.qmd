@@ -1,0 +1,71 @@
+---
+title: "HW8"
+format: html
+editor: visual
+---
+```{r}
+library(tidyr)
+library(dplyr)
+library(readr)
+library(lubridate)
+library(psych)
+
+
+data<-readr::read_csv("SeoulBikeData.csv",locale=locale(encoding="latin1"))
+```
+
+
+```{r}
+sum_na<-function(column){
+  sum(is.na(column))
+}
+
+na_counts<-data|>
+  summarize(across(everything(),sum_na))
+print(na_counts)
+```
+
+```{r}
+psych::describe(data)
+```
+
+```{r}
+
+data$Date<- dmy(data$Date)
+
+print(data)
+
+data<-data|>
+  mutate(Seasons=as.factor(Seasons),
+         Holiday=as.factor(Holiday),
+         `Functioning Day`=as.factor(`Functioning Day`))
+
+print(data)
+
+data<-data|>
+  rename(temp=`Temperature(°C)`,hr=Hour,humidity=`Humidity(%)`,rbc=`Rented Bike Count`,ws=`Wind speed (m/s)`,vis=`Visibility (10m)`,dpttemp=`Dew point temperature(°C)`,solrad=`Solar Radiation (MJ/m2)`,rain=`Rainfall(mm)`,snow=`Snowfall (cm)`,holiday=Holiday,season=Seasons,funday=`Functioning Day`)
+
+```
+
+```{r}
+data|>
+  group_by(funday)|>
+  summarise(across(where(is.numeric),
+                   list("sum"=sum,"mean"=mean,"median"=median,"sd"=sd,"min"=min,"max"=max),
+                   .names="{.fn}_{.col}"))
+    
+  
+ 
+
+```
+```{r}
+data|>
+  group_by(Date,season,holiday)|>
+   summarize(
+     list("sum"=sum,"mean")
+   )
+   
+                   
+  
+```
+
