@@ -9,6 +9,7 @@ library(dplyr)
 library(readr)
 library(lubridate)
 library(psych)
+library(tidymodels)
 
 
 data<-readr::read_csv("SeoulBikeData.csv",locale=locale(encoding="latin1"))
@@ -59,13 +60,82 @@ data|>
 
 ```
 ```{r}
-data|>
+Model_data<-data|>
   group_by(Date,season,holiday)|>
    summarize(
-     list("sum"=sum,"mean")
+     sum_rbc=sum(rbc,na.rm=TRUE),
+     sum_rain=sum(rain,na.rm=TRUE),
+     sum_snow=sum(snow,na.rm=TRUE),
+     mean_temp=mean(temp,na.rm=TRUE),
+     mean_hum=mean(humidity,na.rm=TRUE),
+     mean_ws=mean(ws,na.rm=TRUE),
+     mean_vis=mean(vis,na.rm=TRUE),
+     mean_dpttemp=mean(dpttemp,na.rm=TRUE),
+     mean_solrad=mean(solrad,na.rm=TRUE),
    )
    
                    
   
+
+```
+
+```{r}
+split<-initial_split(Model_data,strata=season,prop=0.75)
+training<-training(split)
+test<-testing(split)
+
+
+nrow(training)
+size_fold <- floor(nrow(training)/10)
+
+set.seed(8)
+random_indices <- sample(1:nrow(training), size = nrow(training), replace = FALSE)
+#see the random reordering
+head(random_indices)
+
+#create a list to save our folds in
+folds <- list()
+#now cycle through our random indices vector and take the appropriate observations to each fold
+for(i in 1:10){
+  if (i < 10) {
+    fold_index <- seq(from = (i-1)*size_fold +1, to = i*size_fold, by = 1)
+    folds[[i]] <- training[random_indices[fold_index], ]
+  } else {
+    fold_index <- seq(from = (i-1)*size_fold +1, to = length(random_indices), by = 1)
+    folds[[i]] <- training[random_indices[fold_index], ]
+  }
+}
+folds[[1]]
+
+get_cv_splits <- function(data, num_folds){
+  #get fold size
+  size_fold <- floor(nrow(data)/num_folds)
+  #get random indices to subset the data with
+  random_indices <- sample(1:nrow(data), size = nrow(data), replace = FALSE)
+  #create a list to save our folds in
+  folds <- list()
+  #now cycle through our random indices vector and take the appropriate observations to each fold
+  for(i in 1:num_folds){
+    if (i < num_folds) {
+      fold_index <- seq(from = (i-1)*size_fold +1, to = i*size_fold, by = 1)
+      folds[[i]] <- data[random_indices[fold_index], ]
+    } else {
+      fold_index <- seq(from = (i-1)*size_fold +1, to = length(random_indices), by = 1)
+      folds[[i]] <- data[random_indices[fold_index], ]
+    }
+  }
+  return(folds)
+}
+folds <- get_cv_splits(training, 10)
+
+#set the test fold number
+test_number <- 10
+#pull out the testing fold
+test <- folds[[test_number]]
+test
+
+
+
+
 ```
 
