@@ -84,29 +84,15 @@ split<-initial_split(Model_data,strata=season,prop=0.75)
 training<-training(split)
 test<-testing(split)
 
+print(training)
+print(test)
 
-nrow(training)
-size_fold <- floor(nrow(training)/10)
 
-set.seed(8)
-random_indices <- sample(1:nrow(training), size = nrow(training), replace = FALSE)
-#see the random reordering
-head(random_indices)
 
-#create a list to save our folds in
-folds <- list()
-#now cycle through our random indices vector and take the appropriate observations to each fold
-for(i in 1:10){
-  if (i < 10) {
-    fold_index <- seq(from = (i-1)*size_fold +1, to = i*size_fold, by = 1)
-    folds[[i]] <- training[random_indices[fold_index], ]
-  } else {
-    fold_index <- seq(from = (i-1)*size_fold +1, to = length(random_indices), by = 1)
-    folds[[i]] <- training[random_indices[fold_index], ]
-  }
-}
-folds[[1]]
+```
 
+
+```{r}
 get_cv_splits <- function(data, num_folds){
   #get fold size
   size_fold <- floor(nrow(data)/num_folds)
@@ -128,13 +114,20 @@ get_cv_splits <- function(data, num_folds){
 }
 folds <- get_cv_splits(training, 10)
 
-#set the test fold number
-test_number <- 10
-#pull out the testing fold
-test <- folds[[test_number]]
-test
+```
 
 
+```{r}
+rec1<-recipe(sum_rbc~.,data=training)|>
+  update_role(Date,new_role = "ID")|>
+  step_date(Date,features="dow")|>
+  step_mutate(DOW=factor(case_when(Date_dow=="Sat"|Date_dow=="Sun"~"Weekend",
+                            Date_dow=="Mon"|Date_dow=="Tue"|Date_dow=="Wed"|Date_dow=="Thu"|Date_dow=="Fri"~"Weekday")))|>
+  step_rm(Date_dow)|>
+  step_dummy(season,holiday,DOW)|>
+  step_normalize(all_numeric(),-all_outcomes())|>
+  prep(training=training)|>
+  bake(training)
 
 
 ```
