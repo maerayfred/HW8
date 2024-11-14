@@ -17,6 +17,7 @@ library(rsample)
 library(yardstick)
 library(tidyverse)
 library(corrr)
+library(parsnip)
 
 ```
 
@@ -131,15 +132,15 @@ g + geom_point()
 ## Splitting the data on a 75/25 split.
 
 ```{r}
-split<-initial_split(Model_data,strata=season,prop=0.75)
-data_training<-training(split)
-data_test<-testing(split)
+data_split<-initial_split(Model_data,strata=season,prop=0.75)
+data_training<-training(data_split)
+data_test<-testing(data_split)
 
 print(data_training)
 print(data_test)
 ```
 
-
+## Creating a 10 fold cv split on the training set
 
 ```{r}
 get_cv_splits <- function(data, num_folds){
@@ -182,7 +183,7 @@ rec1<-recipe(sum_rbc~.,data=data_training)|>
 
 
 
-#Creating a model for recipe 2
+## Creating a model for recipe 2
 
 ```{r}
 rec2<-recipe(sum_rbc~.,data=data_training)|>
@@ -216,7 +217,7 @@ rec3<-recipe(sum_rbc~.,data=data_training)|>
 
 
 
-
+## Model for Recipe 1
 ```{r}
 model<-linear_reg() %>%
   set_engine("lm")
@@ -234,5 +235,50 @@ fit|>
   tidy()
 
 
+bike_10_fold <- vfold_cv(data_training, 10)
+bike_CV_fits <- wkfl |>
+ fit_resamples(bike_10_fold)
+bike_CV_fits
+
+bike_CV_fits|>
+  collect_metrics()
+
+```
+
+## Model for Recipe 2
+```{r}
+model<-linear_reg() %>%
+  set_engine("lm")
+
+
+wkfl<- workflow() %>%
+  add_recipe(rec2)%>%
+  add_model(model) 
+wkfl
+
+fit<-wkfl|>
+  fit(data_training)
+fit|>
+  tidy()
+
+
+```
+
+## Model For Recipe 3
+
+```{r}
+model<-linear_reg() %>%
+  set_engine("lm")
+
+
+wkfl<- workflow() %>%
+  add_recipe(rec2)%>%
+  add_model(model) 
+wkfl
+
+fit<-wkfl|>
+  fit(data_training)
+fit|>
+  tidy()
 ```
 

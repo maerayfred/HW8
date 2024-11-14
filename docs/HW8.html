@@ -206,7 +206,8 @@ Attaching package: 'lubridate'</code></pre>
 ✖ yardstick::spec()    masks readr::spec()
 ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(corrr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(corrr)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(parsnip)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="reading-in-data" class="level2">
 <h2 class="anchored" data-anchor-id="reading-in-data">Reading in Data</h2>
@@ -451,9 +452,9 @@ Correlation computed with
 <section id="splitting-the-data-on-a-7525-split." class="level2">
 <h2 class="anchored" data-anchor-id="splitting-the-data-on-a-7525-split.">Splitting the data on a 75/25 split.</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>split<span class="ot">&lt;-</span><span class="fu">initial_split</span>(Model_data,<span class="at">strata=</span>season,<span class="at">prop=</span><span class="fl">0.75</span>)</span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>data_training<span class="ot">&lt;-</span><span class="fu">training</span>(split)</span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>data_test<span class="ot">&lt;-</span><span class="fu">testing</span>(split)</span>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>data_split<span class="ot">&lt;-</span><span class="fu">initial_split</span>(Model_data,<span class="at">strata=</span>season,<span class="at">prop=</span><span class="fl">0.75</span>)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>data_training<span class="ot">&lt;-</span><span class="fu">training</span>(data_split)</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>data_test<span class="ot">&lt;-</span><span class="fu">testing</span>(data_split)</span>
 <span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(data_training)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -463,14 +464,14 @@ Correlation computed with
    &lt;date&gt;     &lt;fct&gt;  &lt;fct&gt;        &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
  1 2018-09-01 Autumn No Holiday   26010      0          0      25.5     61.2
  2 2018-09-02 Autumn No Holiday   26881      0          0      25.0     54.5
- 3 2018-09-03 Autumn No Holiday   10802     34.5        0      23.6     82.2
- 4 2018-09-04 Autumn No Holiday   29529      0          0      23.3     71.6
- 5 2018-09-05 Autumn No Holiday   31114      0          0      23.8     61.8
- 6 2018-09-07 Autumn No Holiday   30381      1.5        0      22.2     56.9
- 7 2018-09-08 Autumn No Holiday   29813      0          0      21.7     48.7
- 8 2018-09-09 Autumn No Holiday   28354      0          0      22.0     49.5
- 9 2018-09-10 Autumn No Holiday   30781      0          0      22.9     50.1
-10 2018-09-11 Autumn No Holiday   31694      0          0      21.6     48.0
+ 3 2018-09-04 Autumn No Holiday   29529      0          0      23.3     71.6
+ 4 2018-09-06 Autumn No Holiday   27838      0          0      24.2     70.8
+ 5 2018-09-07 Autumn No Holiday   30381      1.5        0      22.2     56.9
+ 6 2018-09-08 Autumn No Holiday   29813      0          0      21.7     48.7
+ 7 2018-09-10 Autumn No Holiday   30781      0          0      22.9     50.1
+ 8 2018-09-11 Autumn No Holiday   31694      0          0      21.6     48.0
+ 9 2018-09-14 Autumn No Holiday   28199      0.5        0      23.5     67.2
+10 2018-09-15 Autumn No Holiday   25079      0.2        0      23.2     75.9
 # ℹ 263 more rows
 # ℹ 4 more variables: mean_ws &lt;dbl&gt;, mean_vis &lt;dbl&gt;, mean_dpttemp &lt;dbl&gt;,
 #   mean_solrad &lt;dbl&gt;</code></pre>
@@ -481,21 +482,24 @@ Correlation computed with
 # Groups:   Date, season [92]
    Date       season holiday    sum_rbc sum_rain sum_snow mean_temp mean_hum
    &lt;date&gt;     &lt;fct&gt;  &lt;fct&gt;        &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
- 1 2017-12-03 Winter No Holiday    7222      4          0      4.88     81.5
- 2 2017-12-14 Winter No Holiday    6398      0          0     -6.87     42.5
- 3 2017-12-15 Winter No Holiday    7198      0          0     -3.28     50.5
- 4 2017-12-17 Winter No Holiday    3776      0          0     -7.01     37.6
- 5 2017-12-23 Winter No Holiday    6624      0          0      6.13     75.6
- 6 2017-12-25 Winter Holiday       3966      0          0     -2.09     43.4
- 7 2017-12-30 Winter No Holiday    4027      0.5        0      1.31     77.8
- 8 2018-01-02 Winter No Holiday    6446      0          0     -1.49     43.7
- 9 2018-01-03 Winter No Holiday    6512      0          0     -4.48     41.2
-10 2018-01-04 Winter No Holiday    6453      0          0     -4.8      44.1
+ 1 2017-12-01 Winter No Holiday    9539      0        0      -2.45      45.9
+ 2 2017-12-04 Winter No Holiday    8729      0.1      0      -0.304     52.5
+ 3 2017-12-09 Winter No Holiday    7233      0        0      -0.846     46  
+ 4 2017-12-13 Winter No Holiday    6019      0        0      -8.62      41.2
+ 5 2017-12-17 Winter No Holiday    3776      0        0      -7.01      37.6
+ 6 2017-12-19 Winter No Holiday    4334      0       55.6    -3.53      50.2
+ 7 2017-12-21 Winter No Holiday    5734      0       38.9    -0.846     73.1
+ 8 2017-12-22 Winter Holiday       7184      0        7.7     2.76      67.1
+ 9 2017-12-25 Winter Holiday       3966      0        0      -2.09      43.4
+10 2017-12-28 Winter No Holiday    6594      0        0      -2.58      45.0
 # ℹ 82 more rows
 # ℹ 4 more variables: mean_ws &lt;dbl&gt;, mean_vis &lt;dbl&gt;, mean_dpttemp &lt;dbl&gt;,
 #   mean_solrad &lt;dbl&gt;</code></pre>
 </div>
 </div>
+</section>
+<section id="creating-a-10-fold-cv-split-on-the-training-set" class="level2">
+<h2 class="anchored" data-anchor-id="creating-a-10-fold-cv-split-on-the-training-set">Creating a 10 fold cv split on the training set</h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>get_cv_splits <span class="ot">&lt;-</span> <span class="cf">function</span>(data, num_folds){</span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">#get fold size</span></span>
@@ -531,7 +535,9 @@ Correlation computed with
 <span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_dummy</span>(season,holiday,DOW)<span class="sc">|&gt;</span></span>
 <span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_normalize</span>(<span class="fu">all_numeric</span>(),<span class="sc">-</span><span class="fu">all_outcomes</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>#Creating a model for recipe 2</p>
+</section>
+<section id="creating-a-model-for-recipe-2" class="level2">
+<h2 class="anchored" data-anchor-id="creating-a-model-for-recipe-2">Creating a model for recipe 2</h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>rec2<span class="ot">&lt;-</span><span class="fu">recipe</span>(sum_rbc<span class="sc">~</span>.,<span class="at">data=</span>data_training)<span class="sc">|&gt;</span></span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">update_role</span>(Date,<span class="at">new_role =</span> <span class="st">"ID"</span>)<span class="sc">|&gt;</span></span>
@@ -558,6 +564,9 @@ Correlation computed with
 <span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_interact</span>(<span class="at">terms =</span> <span class="sc">~</span><span class="fu">starts_with</span>(<span class="st">"holiday"</span>)<span class="sc">*</span><span class="fu">starts_with</span>(<span class="st">"season"</span>)<span class="sc">+</span>mean_temp<span class="sc">*</span>sum_rain<span class="sc">+</span>mean_temp<span class="sc">*</span><span class="fu">starts_with</span>(<span class="st">"season"</span>))<span class="sc">|&gt;</span></span>
 <span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_poly</span>(mean_temp,mean_ws,mean_vis,mean_dpttemp,mean_solrad,sum_rain,sum_snow,<span class="at">degree=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section>
+<section id="model-for-recipe-1" class="level2">
+<h2 class="anchored" data-anchor-id="model-for-recipe-1">Model for Recipe 1</h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>model<span class="ot">&lt;-</span><span class="fu">linear_reg</span>() <span class="sc">%&gt;%</span></span>
 <span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"lm"</span>)</span>
@@ -594,20 +603,156 @@ Computational engine: lm </code></pre>
 <pre><code># A tibble: 14 × 5
    term               estimate std.error statistic   p.value
    &lt;chr&gt;                 &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
- 1 (Intercept)         17302.       310.   55.9    1.81e-146
- 2 sum_rain            -1768.       425.   -4.16   4.31e-  5
- 3 sum_snow             -249.       343.   -0.724  4.70e-  1
- 4 mean_temp           -6949.      6359.   -1.09   2.75e-  1
- 5 mean_hum            -3147.      2337.   -1.35   1.79e-  1
- 6 mean_ws             -1086.       357.   -3.04   2.63e-  3
- 7 mean_vis              -29.9      443.   -0.0675 9.46e-  1
- 8 mean_dpttemp        11992.      7465.    1.61   1.09e-  1
- 9 mean_solrad          4477.       556.    8.05   3.03e- 14
-10 season_Spring       -1800.       443.   -4.06   6.52e-  5
-11 season_Summer        -920.       520.   -1.77   7.79e-  2
-12 season_Winter       -2862.       599.   -4.78   2.94e-  6
-13 holiday_No.Holiday    955.       319.    2.99   3.07e-  3
-14 DOW_Weekend          -845.       315.   -2.68   7.79e-  3</code></pre>
+ 1 (Intercept)          16514.      353.    46.8   2.35e-128
+ 2 sum_rain             -1830.      479.    -3.82  1.68e-  4
+ 3 sum_snow              -259.      386.    -0.671 5.03e-  1
+ 4 mean_temp            -6312.     7451.    -0.847 3.98e-  1
+ 5 mean_hum             -3447.     2753.    -1.25  2.12e-  1
+ 6 mean_ws               -739.      409.    -1.81  7.20e-  2
+ 7 mean_vis              -771.      499.    -1.55  1.23e-  1
+ 8 mean_dpttemp         10532.     8729.     1.21  2.29e-  1
+ 9 mean_solrad           3860.      645.     5.98  7.33e-  9
+10 season_Spring        -1567.      490.    -3.20  1.56e-  3
+11 season_Summer         -126.      600.    -0.210 8.34e-  1
+12 season_Winter        -3314.      674.    -4.92  1.54e-  6
+13 holiday_No.Holiday    1027.      360.     2.85  4.67e-  3
+14 DOW_Weekend           -703.      359.    -1.96  5.11e-  2</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>bike_10_fold <span class="ot">&lt;-</span> <span class="fu">vfold_cv</span>(data_training, <span class="dv">10</span>)</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>bike_CV_fits <span class="ot">&lt;-</span> wkfl <span class="sc">|&gt;</span></span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a> <span class="fu">fit_resamples</span>(bike_10_fold)</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>bike_CV_fits</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># Resampling results
+# 10-fold cross-validation 
+# A tibble: 10 × 4
+   splits           id     .metrics         .notes          
+   &lt;list&gt;           &lt;chr&gt;  &lt;list&gt;           &lt;list&gt;          
+ 1 &lt;split [245/28]&gt; Fold01 &lt;tibble [2 × 4]&gt; &lt;tibble [0 × 3]&gt;
+ 2 &lt;split [245/28]&gt; Fold02 &lt;tibble [2 × 4]&gt; &lt;tibble [0 × 3]&gt;
+ 3 &lt;split [245/28]&gt; Fold03 &lt;tibble [2 × 4]&gt; &lt;tibble [0 × 3]&gt;
+ 4 &lt;split [246/27]&gt; Fold04 &lt;tibble [2 × 4]&gt; &lt;tibble [0 × 3]&gt;
+ 5 &lt;split [246/27]&gt; Fold05 &lt;tibble [2 × 4]&gt; &lt;tibble [0 × 3]&gt;
+ 6 &lt;split [246/27]&gt; Fold06 &lt;tibble [2 × 4]&gt; &lt;tibble [0 × 3]&gt;
+ 7 &lt;split [246/27]&gt; Fold07 &lt;tibble [2 × 4]&gt; &lt;tibble [0 × 3]&gt;
+ 8 &lt;split [246/27]&gt; Fold08 &lt;tibble [2 × 4]&gt; &lt;tibble [0 × 3]&gt;
+ 9 &lt;split [246/27]&gt; Fold09 &lt;tibble [2 × 4]&gt; &lt;tibble [0 × 3]&gt;
+10 &lt;split [246/27]&gt; Fold10 &lt;tibble [2 × 4]&gt; &lt;tibble [0 × 3]&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>bike_CV_fits<span class="sc">|&gt;</span></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect_metrics</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 6
+  .metric .estimator     mean     n  std_err .config             
+  &lt;chr&gt;   &lt;chr&gt;         &lt;dbl&gt; &lt;int&gt;    &lt;dbl&gt; &lt;chr&gt;               
+1 rmse    standard   5846.       10 386.     Preprocessor1_Model1
+2 rsq     standard      0.674    10   0.0448 Preprocessor1_Model1</code></pre>
+</div>
+</div>
+</section>
+<section id="model-for-recipe-2" class="level2">
+<h2 class="anchored" data-anchor-id="model-for-recipe-2">Model for Recipe 2</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>model<span class="ot">&lt;-</span><span class="fu">linear_reg</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"lm"</span>)</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>wkfl<span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(rec2)<span class="sc">%&gt;%</span></span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(model) </span>
+<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>wkfl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>══ Workflow ════════════════════════════════════════════════════════════════════
+Preprocessor: Recipe
+Model: linear_reg()
+
+── Preprocessor ────────────────────────────────────────────────────────────────
+6 Recipe Steps
+
+• step_date()
+• step_mutate()
+• step_rm()
+• step_dummy()
+• step_normalize()
+• step_interact()
+
+── Model ───────────────────────────────────────────────────────────────────────
+Linear Regression Model Specification (regression)
+
+Computational engine: lm </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>fit<span class="ot">&lt;-</span>wkfl<span class="sc">|&gt;</span></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(data_training)</span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>fit<span class="sc">|&gt;</span></span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tidy</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 21 × 5
+   term          estimate std.error statistic  p.value
+   &lt;chr&gt;            &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+ 1 (Intercept)     21218.      968.    21.9   2.33e-60
+ 2 sum_rain        -2214.      722.    -3.07  2.40e- 3
+ 3 sum_snow         -214.      351.    -0.608 5.44e- 1
+ 4 mean_temp       -7391.     7344.    -1.01  3.15e- 1
+ 5 mean_hum        -3240.     2730.    -1.19  2.36e- 1
+ 6 mean_ws          -498.      374.    -1.33  1.85e- 1
+ 7 mean_vis         -146.      479.    -0.304 7.61e- 1
+ 8 mean_dpttemp     9741.     8601.     1.13  2.58e- 1
+ 9 mean_solrad      3413.      584.     5.84  1.61e- 8
+10 season_Spring   -1345.      440.    -3.06  2.49e- 3
+# ℹ 11 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="model-for-recipe-3" class="level2">
+<h2 class="anchored" data-anchor-id="model-for-recipe-3">Model For Recipe 3</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>model<span class="ot">&lt;-</span><span class="fu">linear_reg</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"lm"</span>)</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>wkfl<span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(rec2)<span class="sc">%&gt;%</span></span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(model) </span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>wkfl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>══ Workflow ════════════════════════════════════════════════════════════════════
+Preprocessor: Recipe
+Model: linear_reg()
+
+── Preprocessor ────────────────────────────────────────────────────────────────
+6 Recipe Steps
+
+• step_date()
+• step_mutate()
+• step_rm()
+• step_dummy()
+• step_normalize()
+• step_interact()
+
+── Model ───────────────────────────────────────────────────────────────────────
+Linear Regression Model Specification (regression)
+
+Computational engine: lm </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>fit<span class="ot">&lt;-</span>wkfl<span class="sc">|&gt;</span></span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(data_training)</span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>fit<span class="sc">|&gt;</span></span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tidy</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 21 × 5
+   term          estimate std.error statistic  p.value
+   &lt;chr&gt;            &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+ 1 (Intercept)     21218.      968.    21.9   2.33e-60
+ 2 sum_rain        -2214.      722.    -3.07  2.40e- 3
+ 3 sum_snow         -214.      351.    -0.608 5.44e- 1
+ 4 mean_temp       -7391.     7344.    -1.01  3.15e- 1
+ 5 mean_hum        -3240.     2730.    -1.19  2.36e- 1
+ 6 mean_ws          -498.      374.    -1.33  1.85e- 1
+ 7 mean_vis         -146.      479.    -0.304 7.61e- 1
+ 8 mean_dpttemp     9741.     8601.     1.13  2.58e- 1
+ 9 mean_solrad      3413.      584.     5.84  1.61e- 8
+10 season_Spring   -1345.      440.    -3.06  2.49e- 3
+# ℹ 11 more rows</code></pre>
 </div>
 </div>
 
