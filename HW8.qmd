@@ -4,18 +4,31 @@ format: html
 editor: visual
 ---
 ```{r}
+
+
 library(tidyr)
 library(dplyr)
 library(readr)
 library(lubridate)
 library(psych)
 library(tidymodels)
+library(stats)
+library(rsample)
+library(yardstick)
 
 
+```
+
+
+## Reading in Data 
+
+```{r}
 data<-readr::read_csv("SeoulBikeData.csv",locale=locale(encoding="latin1"))
 ```
 
 
+## Checking for Missing Values
+### After checking to see if how many missing values we have in each columns we can see that there aren't any missing values. 
 ```{r}
 sum_na<-function(column){
   sum(is.na(column))
@@ -24,29 +37,32 @@ sum_na<-function(column){
 na_counts<-data|>
   summarize(across(everything(),sum_na))
 print(na_counts)
-```
 
+```
+## Exploring Basic Summaries/Values
+### One of the things that sticks out to me is that each variable has the same number of observations which confirms there aren't any missing values. We can also see which variables are numeric or not. Finally I can see that I'll need to rename the variables to make them more user friendly. 
 ```{r}
 psych::describe(data)
 ```
-
+## Here we are updating our data set.
 ```{r}
-
+#Fixing the Date variable
 data$Date<- dmy(data$Date)
 
-print(data)
 
+#Here we are changing our categorical variables to be factors.
 data<-data|>
   mutate(Seasons=as.factor(Seasons),
          Holiday=as.factor(Holiday),
          `Functioning Day`=as.factor(`Functioning Day`))
 
-print(data)
+#Here we are updating the varaible names to make them more user friendly. 
 
 data<-data|>
   rename(temp=`Temperature(°C)`,hr=Hour,humidity=`Humidity(%)`,rbc=`Rented Bike Count`,ws=`Wind speed (m/s)`,vis=`Visibility (10m)`,dpttemp=`Dew point temperature(°C)`,solrad=`Solar Radiation (MJ/m2)`,rain=`Rainfall(mm)`,snow=`Snowfall (cm)`,holiday=Holiday,season=Seasons,funday=`Functioning Day`)
 
 ```
+##
 
 ```{r}
 data|>
@@ -81,15 +97,13 @@ Model_data<-data|>
 
 ```{r}
 split<-initial_split(Model_data,strata=season,prop=0.75)
-training<-training(split)
-test<-testing(split)
+data_training<-training(split)
+data_test<-testing(split)
 
-print(training)
-print(test)
-
-
-
+print(data_training)
+print(data_test)
 ```
+
 
 
 ```{r}
@@ -112,13 +126,30 @@ get_cv_splits <- function(data, num_folds){
   }
   return(folds)
 }
-folds <- get_cv_splits(training, 10)
+folds <- get_cv_splits(data_training, 10)
 
 ```
 
 
 ```{r}
-rec1<-recipe(sum_rbc~.,data=training)|>
+rec1<-recipe(sum_rbc~.,data=data_training)|>
+  update_role(Date,new_role = "ID")|>
+  step_date(Date,features="dow")|>
+  step_mutate(DOW=factor(case_when(Date_dow=="Sat"|Date_dow=="Sun"~"Weekend",
+                            Date_dow=="Mon"|Date_dow=="Tue"|Date_dow=="Wed"|Date_dow=="Thu"|Date_dow=="Fri"~"Weekday")))|>
+  step_rm(Date_dow)|>
+  step_dummy(season,holiday,DOW)|>
+  step_normalize(all_numeric(),-all_outcomes())
+
+
+
+```
+
+
+
+
+```{r}
+rec2<-recipe(sum_rbc~.,data=data_training)|>
   update_role(Date,new_role = "ID")|>
   step_date(Date,features="dow")|>
   step_mutate(DOW=factor(case_when(Date_dow=="Sat"|Date_dow=="Sun"~"Weekend",
@@ -126,8 +157,43 @@ rec1<-recipe(sum_rbc~.,data=training)|>
   step_rm(Date_dow)|>
   step_dummy(season,holiday,DOW)|>
   step_normalize(all_numeric(),-all_outcomes())|>
-  prep(training=training)|>
-  bake(training)
+  step_interact(terms = ~starts_with("holiday")*starts_with("season")+mean_temp*sum_rain+mean_temp*starts_with("season"))
+
+```
+
+
+```{r}
+rec3<-recipe(sum_rbc~.,data=data_training)|>
+  update_role(Date,new_role = "ID")|>
+  step_date(Date,features="dow")|>
+  step_mutate(DOW=factor(case_when(Date_dow=="Sat"|Date_dow=="Sun"~"Weekend",
+                            Date_dow=="Mon"|Date_dow=="Tue"|Date_dow=="Wed"|Date_dow=="Thu"|Date_dow=="Fri"~"Weekday")))|>
+  step_rm(Date_dow)|>
+  step_dummy(season,holiday,DOW)|>
+  step_normalize(all_numeric(),-all_outcomes())|>
+  step_interact(terms = ~starts_with("holiday")*starts_with("season")+mean_temp*sum_rain+mean_temp*starts_with("season"))|>
+  step_poly(mean_temp,mean_ws,mean_vis,mean_dpttemp,mean_solrad,sum_rain,sum_snow,degree=2)
+  
+
+```
+
+
+
+```{r}
+model<-linear_reg() %>%
+  set_engine("lm")
+
+
+wkfl<- workflow() %>%
+  add_recipe(rec1)%>%
+  add_model(model) 
+wkfl
+
+
+fit<-wkfl|>
+  fit(data_training)
+fit|>
+  tidy()
 
 
 ```
